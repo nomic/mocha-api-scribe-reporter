@@ -1,0 +1,23 @@
+{
+  "name": "mocha-api-scribe-reporter",
+  "version": "0.0.1",
+  "description": "a concise way to string together and test JSON API calls",
+  "keywords": [
+    "mocha",
+    "http",
+    "testing",
+    "json",
+    "api"
+  ],
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nomic/mocha-api-scribe-reporter.git"
+  },
+  "author": "Aaron Boyd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nomic/mocha-api-scribe-reporter/issues"
+  },
+  "homepage": "https://github.com/nomic/mocha-api-scribe-reporter"
+}
