@@ -69,6 +69,61 @@ function Scribe(runner) {
     testTranscript = transcript;
   });
 
+  runner.on('suite end', function(){
+    var suiteTranscript = suites.pop();
+    if (1 === suites.length) {
+      var outFile = suiteTranscript.description.replace(/ /g, '_') + '.json';
+      fs.writeFileSync(outDir + '/' + outFile, JSON.stringify(suiteTranscript, null, 4));
+      index.push({file: outFile, desc: suiteTranscript.description});
+    }
+  });
+
+  runner.on('pending', function(test){
+    var fmt = indent() + color('pending', '  - %s');
+    console.log(fmt, test.title);
+  });
+
+  runner.on('pass', function(test){
+    var fmt;
+    if ('fast' === test.speed) {
+      fmt = indent()
+        + color('checkmark', '  ' + Base.symbols.ok)
+        + color('pass', ' %s ');
+      cursor.CR();
+      console.log(fmt, test.title);
+    } else {
+      fmt = indent()
+        + color('checkmark', '  ' + Base.symbols.ok)
+        + color('pass', ' %s ')
+        + color(test.speed, '(%dms)');
+      cursor.CR();
+      console.log(fmt, test.title, test.duration);
+    }
+  });
+
+  runner.on('fail', function(test){
+    cursor.CR();
+    console.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
+  });
+
+  runner.on('end', function() {
+    fs.writeFileSync(outDir + '/index.json', JSON.stringify({transcripts: index}, null, 4));
+    self.epilogue();
+  });
+
+  //
+  // Handle driver events
+  //
+  driver.on('step', function(title) {
+    step = {
+      description: title,
+      depth: 0,
+      docStrings: {},
+      actions: []
+    };
+    testTranscript.steps.push(step);
+  });
+
   driver.on('request end', function(actor, req, res) {
     if (!testTranscript || inHook) return;
     if (testTranscript.steps.length === 0) {
@@ -95,46 +150,7 @@ function Scribe(runner) {
     };
   });
 
-  runner.on('suite end', function(){
-    var suiteTranscript = suites.pop();
-    if (1 === suites.length) {
-      var outFile = suiteTranscript.description.replace(/ /g, '_') + '.json';
-      fs.writeFileSync(outDir + '/' + outFile, JSON.stringify(suiteTranscript, null, 4));
-      index.push({file: outFile, desc: suiteTranscript.description});
-    }
-  });
 
-  runner.on('pending', function(test){
-    var fmt = indent() + color('pending', '  - %s');
-    console.log(fmt, test.title);
-  });
-
-  runner.on('pass', function(test){
-    if ('fast' == test.speed) {
-      var fmt = indent()
-        + color('checkmark', '  ' + Base.symbols.ok)
-        + color('pass', ' %s ');
-      cursor.CR();
-      console.log(fmt, test.title);
-    } else {
-      var fmt = indent()
-        + color('checkmark', '  ' + Base.symbols.ok)
-        + color('pass', ' %s ')
-        + color(test.speed, '(%dms)');
-      cursor.CR();
-      console.log(fmt, test.title, test.duration);
-    }
-  });
-
-  runner.on('fail', function(test, err){
-    cursor.CR();
-    console.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
-  });
-
-  runner.on('end', function() {
-    fs.writeFileSync(outDir + '/index.json', JSON.stringify({transcripts: index}, null, 4));
-    self.epilogue();
-  });
 }
 
 /**

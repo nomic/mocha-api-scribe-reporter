@@ -1,6 +1,6 @@
 {
   "name": "mocha-api-scribe-reporter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a concise way to string together and test JSON API calls",
   "keywords": [
     "mocha",
@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/nomic/mocha-api-scribe-reporter/issues"
   },
-  "homepage": "https://github.com/nomic/mocha-api-scribe-reporter"
+  "homepage": "https://github.com/nomic/mocha-api-scribe-reporter",
+  "devDependencies": {
+    "mocha": "1.20.1",
+    "api-driver": "*"
+  }
 }
