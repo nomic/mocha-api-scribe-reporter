@@ -4,7 +4,9 @@ var Base = require('mocha/lib/reporters/base'),
   cursor = Base.cursor,
   color = Base.color,
   driver = require('api-driver').emitter,
-  fs = require('fs');
+  fs = require('fs'),
+  assert = require('assert'),
+  _ = require('lodash');
 
 exports = module.exports = Scribe;
 
@@ -24,7 +26,6 @@ function Scribe(runner) {
     suites = [],
     tests,
     testTranscript,
-    step,
     index = [],
     n = 0,
     inHook;
@@ -114,18 +115,25 @@ function Scribe(runner) {
   //
   // Handle driver events
   //
+
+  function lookupStep(testTranscript, stack) {
+    assert(stack.length >= 1);
+    // Do not yet support nested steps
+    return _.find(testTranscript.steps, {description: stack[0]});
+  }
+
   driver.on('step', function(title) {
-    step = {
+    testTranscript.steps.push({
       description: title,
       depth: 0,
       docStrings: {},
       actions: []
-    };
-    testTranscript.steps.push(step);
+    });
   });
 
-  driver.on('request end', function(actor, req, res) {
+  driver.on('request end', function(stack, actor, req, res) {
     if (!testTranscript || inHook) return;
+    var step;
     if (testTranscript.steps.length === 0) {
       testTranscript.steps.push({
         description: '$body$',
@@ -135,6 +143,8 @@ function Scribe(runner) {
       });
       step = testTranscript.steps[0];
     }
+    step = lookupStep(testTranscript, stack);
+
     var action = {};
     step.actions.push(action);
     action.actor = actor;
